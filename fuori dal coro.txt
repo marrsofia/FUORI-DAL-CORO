@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fuori dal Coro / Nel Coro</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#FEFAAA;--ink:#191E6D;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#07320C;--ink:#EED5FF;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#07320C;--ink:#EED5FF;color-scheme:dark}
+:root{--card:var(--bg);--me:var(--ink);--btn:var(--ink);--btnink:var(--bg);--sh:var(--ink);--mut:color-mix(in srgb,var(--ink) 80%,var(--bg));--fig:color-mix(in srgb,var(--ink) 24%,var(--bg))}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo","Helvetica Neue",Arial,sans-serif;line-height:1.4;transition:background .25s}
+main{max-width:30rem;margin:0 auto;padding:1.25rem 1.25rem 3rem}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:1.25rem}
+h1,h2,.big b{font-family:"Archivo","Arial Narrow",Arial,sans-serif;font-weight:900;font-variation-settings:"wdth" 66;font-stretch:66%}
+h1{font-size:1.45rem;margin:0;line-height:1}
+.streak{font-size:.9rem;color:var(--mut)}
+.streak b{color:var(--ink)}
+.progress{display:flex;gap:.4rem;margin-bottom:1.25rem}
+.progress-dot{flex:1;height:8px;background:var(--fig);border-radius:4px}
+.progress-dot.active{background:var(--ink)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.7rem}
+.modes button{font:inherit;font-weight:800;padding:.75rem .5rem;border-radius:.4rem;border:3px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:4px 4px 0 var(--sh)}
+.hint{color:var(--ink);font-size:.95rem;margin:0 0 1.5rem;min-height:2.4em}
+h2{font-size:clamp(2rem,10vw,3.2rem);line-height:1;margin:0 0 1.2rem;letter-spacing:-.005em}
+input{width:100%;font:inherit;font-size:1.2rem;padding:.9rem 1rem;border-radius:.4rem;border:3px solid var(--ink);background:var(--card);color:var(--ink);box-shadow:4px 4px 0 var(--sh)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.cta{width:100%;margin-top:1rem;font:inherit;font-weight:900;font-size:1.1rem;padding:.95rem;border:3px solid var(--ink);border-radius:.4rem;background:var(--btn);color:var(--btnink);cursor:pointer;box-shadow:4px 4px 0 var(--sh)}
+.cta:active,.sec:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--sh)}
+.err{color:var(--ink);font-weight:700;min-height:1.4em;margin:.6rem 0 0;font-size:.92rem}
+.big{display:flex;align-items:baseline;gap:.6rem;margin:0}
+.big b{font-size:clamp(6rem,30vw,8.5rem);line-height:.82;color:var(--ink)}
+.big span{font-size:1.2rem;color:var(--mut);font-weight:700}
+.msg{font-size:1.15rem;font-weight:800;margin:.8rem 0 .3rem}
+.note{color:var(--mut);font-size:.92rem;margin:.2rem 0}
+.summary-list{margin:1.5rem 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.8rem}
+.summary-item{background:var(--fig);padding:.8rem 1rem;border-radius:.4rem;display:flex;justify-content:space-between;align-items:center}
+.summary-item strong{display:block;font-size:.95rem}
+.summary-item span{color:var(--mut);font-size:.85rem}
+.summary-score{font-weight:900;font-size:1.2rem}
+.row2{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.5rem}
+.sec{font:inherit;font-weight:800;padding:.75rem 1rem;border-radius:.4rem;border:3px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer;box-shadow:4px 4px 0 var(--sh)}
+.foot{margin-top:2rem;color:var(--mut);font-size:.82rem}
+[hidden]{display:none!important}
+.mascot{display:block;color:var(--ink);fill:currentColor;margin:0 0 1rem}
+.mascot-fuori{height:4rem;width:4rem}
+.mascot-nel{height:3.2rem;width:9.6rem;display:none}
+:root[data-mode="nel"] .mascot-nel{display:block}
+:root[data-mode="nel"] .mascot-fuori{display:none}
+.rh{font-size:clamp(1.7rem,8vw,2.3rem);margin:0 0 .6rem;line-height:1}
+::placeholder{color:var(--mut);opacity:1}
+.modes button[aria-pressed="true"]::before{content:"\2713\00a0"}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="bird" viewBox="0 0 40 40"><path d="M8 22 L1 16 L3 28Z"/><ellipse cx="19" cy="25" rx="13" ry="8.5"/><circle cx="30" cy="17" r="6.5"/><path d="M35 15.2 L40 17.5 L35 19.5Z"/><path d="M17 32v5M23 32v5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M12 24 Q19 18 26 25 Q19 30 12 24Z" style="fill:var(--bg);opacity:.35"/><circle cx="31.6" cy="15.8" r="1.5" style="fill:var(--bg)"/></symbol>
+<symbol id="punk" viewBox="0 0 40 40"><use href="#bird" width="40" height="40"/><path d="M25 13 L24.5 5 L28 10 L29.5 2 L32 9.5 L35 4 L35.5 13Z"/></symbol>
+<symbol id="flock" viewBox="0 0 120 40"><use href="#bird" x="0" y="16" width="24" height="24"/><use href="#bird" x="26" y="6" width="28" height="28"/><use href="#bird" x="56" y="14" width="26" height="26"/><use href="#bird" x="84" y="2" width="22" height="22"/><use href="#bird" x="90" y="18" width="24" height="24"/></symbol>
+</defs></svg>
+<main>
+  <header>
+    <h1>Fuori dal Coro / Nel Coro</h1>
+    <div class="streak" id="streak"></div>
+  </header>
+
+  <!-- SCHERMATA DI GIOCO -->
+  <section id="play">
+    <div class="progress" id="progress"></div>
+    <svg class="mascot mascot-fuori" viewBox="0 0 40 40" aria-hidden="true"><use href="#punk" width="40" height="40"/></svg>
+    <svg class="mascot mascot-nel" viewBox="0 0 120 40" aria-hidden="true"><use href="#flock" width="120" height="40"/></svg>
+    <div class="modes" role="group" aria-label="Modalità di gioco">
+      <button type="button" id="m-fuori" aria-pressed="true">Fuori dal Coro</button>
+      <button type="button" id="m-nel" aria-pressed="false">Nel Coro</button>
+    </div>
+    <p class="hint" id="hint"></p>
+    <h2 id="q"></h2>
+    <input id="ans" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Scrivi la tua risposta">
+    <p class="err" id="err" role="alert"></p>
+    <button class="cta" id="go" type="button">Conferma risposta</button>
+  </section>
+
+  <!-- SCHERMATA RISULTATI FINALI -->
+  <section id="res" hidden>
+    <h2 class="rh" id="resH">Risultato Finale</h2>
+    <p class="note" id="modeSummary"></p>
+    <p class="big"><b id="pts">0</b><span>/ 500 pt</span></p>
+    <p class="msg" id="msg"></p>
+    
+    <ul class="summary-list" id="summaryList"></ul>
+
+    <div class="row2">
+      <button class="cta" id="share" type="button" style="width:auto;margin:0;padding:.8rem 1.4rem">Condividi risultato</button>
+      <button class="sec" id="redo" type="button">Rigioca (Test)</button>
+    </div>
+    <p class="note" id="shareNote" role="status"></p>
+    <p class="foot">Prototipo v1: le percentuali sono stime precalcolate su un campione di 100 italiani.</p>
+  </section>
+</main>
+
+<script>
+/* DATI DELLE 5 DOMANDE DAILY */
+const QUESTIONS = [
+  {
+    text: "1/5: Qual è il tuo formato di pasta preferito?",
+    maxScore: 33,
+    items: [
+      {canonical:"spaghetti", score:33, alias:["spaghetti","spaghetto","spaghettoni"]},
+      {canonical:"penne", score:14, alias:["penne","penne rigate","pennette"]},
+      {canonical:"rigatoni", score:10, alias:["rigatoni","rigatone"]},
+      {canonical:"fusilli", score:7, alias:["fusilli","fusillo"]},
+      {canonical:"mezze maniche", score:6, alias:["mezze maniche","mezzemaniche"]},
+      {canonical:"tagliatelle", score:5, alias:["tagliatelle","tagliatella"]},
+      {canonical:"orecchiette", score:4, alias:["orecchiette"]},
+      {canonical:"paccheri", score:3, alias:["paccheri"]}
+    ]
+  },
+  {
+    text: "2/5: Città italiana per un weekend romantico?",
+    maxScore: 42,
+    items: [
+      {canonical:"Venezia", score:42, alias:["venezia"]},
+      {canonical:"Firenze", score:28, alias:["firenze"]},
+      {canonical:"Roma", score:16, alias:["roma"]},
+      {canonical:"Verona", score:8, alias:["verona"]},
+      {canonical:"Napoli", score:3, alias:["napoli"]}
+    ]
+  },
+  {
+    text: "3/5: L'animale domestico perfetto?",
+    maxScore: 48,
+    items: [
+      {canonical:"Cane", score:48, alias:["cane","cagnolino","cagnolo"]},
+      {canonical:"Gatto", score:40, alias:["gatto","gattino","micio"]},
+      {canonical:"Coniglio", score:5, alias:["coniglio","coniglietto"]},
+      {canonical:"Pesce rosso", score:3, alias:["pesce","pesce rosso"]},
+      {canonical:"Pappagallo", score:2, alias:["pappagallo","cocorita"]}
+    ]
+  },
+  {
+    text: "4/5: Un superpotere che vorresti avere?",
+    maxScore: 38,
+    items: [
+      {canonical:"Volare", score:38, alias:["volare","Volo"]},
+      {canonical:"Invisibilità", score:27, alias:["invisibilita","diventare invisibile","invisibile"]},
+      {canonical:"Teletrasporto", score:20, alias:["teletrasporto","teletrasportarsi"]},
+      {canonical:"Leggere la mente", score:9, alias:["leggere il pensiero","leggere le menti","telepatia"]},
+      {canonical:"Viaggiare nel tempo", score:4, alias:["tempo","viaggio nel tempo"]}
+    ]
+  },
+  {
+    text: "5/5: Cosa volevi fare da grande quando eri piccolo?",
+    maxScore: 25,
+    items: [
+      {canonical:"Calciatore", score:25, alias:["calciatore","giocatore di calcio"]},
+      {canonical:"Astronauta", score:20, alias:["astronauta"]},
+      {canonical:"Veterinario", score:18, alias:["veterinario","veterinaria"]},
+      {canonical:"Maestro / Insegnante", score:12, alias:["maestra","maestro","insegnante"]},
+      {canonical:"Militare / Poliziotto / Vigile", score:10, alias:["poliziotto","carabiniere","vigile del fuoco","pompiero"]}
+    ]
+  }
+];
+
+const UNMATCHED_PCT = 1;
+
+/* NORMALIZZAZIONE E MATCHING */
+function norm(s){
+  s = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  s = s.replace(/['’`]/g," ").replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+  for (let k=0;k<2;k++) s = s.replace(/^(il|lo|la|le|i|gli|un|una|uno|l)\s+/,"");
+  return s.trim();
+}
+
+function match(raw, q) {
+  const clean = norm(raw);
+  if(!clean) return null;
+  for (let item of q.items) {
+    if(item.alias.some(a => norm(a) === clean)) return item;
+  }
+  return null;
+}
+
+function calcPoints(mode, pct, maxScore) {
+  if (mode === "nel") {
+    return Math.round(100 * (pct / maxScore));
+  } else {
+    return Math.round(100 * (1 - (pct / maxScore)));
+  }
+}
+
+/* STATO GIOCO E STREAK */
+const KEY = "fdc_daily_v1";
+let st = { streak: 0, last: null, answers: [] };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if(s) st = s; } catch(e){}
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} };
+
+function dayKey(off=0){
+  const d=new Date(); d.setDate(d.getDate()+off);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+const streakNow = () => (st.last===dayKey() || st.last===dayKey(-1)) ? st.streak : 0;
+function drawStreak(){ document.getElementById("streak").innerHTML = "Serie: <b>"+streakNow()+"</b> "+(streakNow()===1?"giorno":"giorni"); }
+
+const $ = id => document.getElementById(id);
+let currentMode = "fuori";
+let currentStep = 0;
+let sessionAnswers = [];
+
+const HINT = {
+  fuori: "Obiettivo: trova le risposte più RARE. Meno persone la pensano come te, più punti fai!",
+  nel: "Obiettivo: trova le risposte più COMUNI. Più persone la pensano come te, più punti fai!"
+};
+
+function setMode(m){
+  currentMode = m; 
+  document.documentElement.dataset.mode = m;
+  $("m-fuori").setAttribute("aria-pressed", m === "fuori");
+  $("m-nel").setAttribute("aria-pressed", m === "nel");
+  $("hint").textContent = HINT[m];
+}
+
+function renderProgress(){
+  const box = $("progress");
+  box.innerHTML = "";
+  QUESTIONS.forEach((_, i) => {
+    const d = document.createElement("div");
+    d.className = "progress-dot" + (i <= currentStep ? " active" : "");
+    box.appendChild(d);
+  });
+}
+
+function showPlay(){
+  $("play").hidden = false; 
+  $("res").hidden = true;
+  drawStreak();
+  renderProgress();
+  $("q").textContent = QUESTIONS[currentStep].text;
+  $("ans").value = "";
+  setMode(currentMode);
+}
+
+function submitAnswer(){
+  const raw = $("ans").value.trim();
+  if(raw.length < 2){ 
+    $("err").textContent = "Inserisci una risposta valida."; 
+    return; 
+  }
+  $("err").textContent = "";
+
+  const q = QUESTIONS[currentStep];
+  const matched = match(raw, q);
+  const pct = matched ? matched.score : UNMATCHED_PCT;
+  const pts = calcPoints(currentMode, pct, q.maxScore);
+
+  sessionAnswers.push({
+    qText: q.text,
+    raw: raw,
+    canon: matched ? matched.canonical : raw,
+    pct: pct,
+    pts: pts
+  });
+
+  if (currentStep + 1 < QUESTIONS.length) {
+    currentStep++;
+    showPlay();
+  } else {
+    finishGame();
+  }
+}
+
+function finishGame(){
+  const t = dayKey();
+  if(st.last !== t){
+    st.streak = (st.last === dayKey(-1)) ? st.streak + 1 : 1;
+    st.last = t;
+  }
+  st.answers = sessionAnswers;
+  st.mode = currentMode;
+  persist();
+  showResults();
+}
+
+function showResults(){
+  $("play").hidden = true; 
+  $("res").hidden = false;
+  drawStreak();
+
+  const totalPts = sessionAnswers.reduce((acc, a) => acc + a.pts, 0);
+  $("pts").textContent = totalPts;
+  $("modeSummary").textContent = "Modalità giocata: " + (currentMode === "nel" ? "Nel Coro" : "Fuori dal Coro");
+
+  if(currentMode === "fuori") {
+    $("msg").textContent = totalPts > 350 ? "Sei un vero spirito libero! 🦄" : "Ti muovi un po' troppo con la massa...";
+  } else {
+    $("msg").textContent = totalPts > 350 ? "In piena sintonia con la massa! 🐑" : "Troppo originale per stare nel coro!";
+  }
+
+  const list = $("summaryList");
+  list.innerHTML = "";
+  sessionAnswers.forEach(a => {
+    const li = document.createElement("li");
+    li.className = "summary-item";
+    li.innerHTML = `
+      <div>
+        <strong>${a.canon}</strong>
+        <span>Scelta dal ${a.pct}% degli italiani</span>
+      </div>
+      <div class="summary-score">+${a.pts}</div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+async function share(){
+  const totalPts = sessionAnswers.reduce((acc, a) => acc + a.pts, 0);
+  const modeLabel = currentMode === "nel" ? "Nel Coro 🐑" : "Fuori dal Coro 🦄";
+  const d = new Date().toLocaleDateString("it-IT", {day:"numeric", month:"short"});
+
+  let grid = sessionAnswers.map(a => {
+    if(a.pts >= 80) return "🟩";
+    if(a.pts >= 40) return "🟨";
+    return "🟥";
+  }).join("");
+
+  const shareText = `Fuori dal Coro / Nel Coro (${d})\nModalità: ${modeLabel}\nPunteggio: ${totalPts}/500 pt\n${grid}\n\nGioca anche tu!`;
+
+  try {
+    if(navigator.share){ 
+      await navigator.share({ text: shareText }); 
+      return; 
+    }
+    await navigator.clipboard.writeText(shareText);
+    $("shareNote").textContent = "Copiato negli appunti!";
+  } catch(e) {
+    $("shareNote").textContent = "Copia questo testo per condividere:\n" + shareText;
+  }
+}
+
+$("m-fuori").onclick = () => setMode("fuori");
+$("m-nel").onclick = () => setMode("nel");
+$("go").onclick = submitAnswer;
+$("ans").addEventListener("keydown", e => { if(e.key === "Enter") submitAnswer(); });
+$("share").onclick = share;
+$("redo").onclick = () => {
+  currentStep = 0;
+  sessionAnswers = [];
+  showPlay();
+};
+
+/* Avvio */
+if(st.last === dayKey() && st.answers && st.answers.length === 5) {
+  sessionAnswers = st.answers;
+  currentMode = st.mode || "fuori";
+  showResults();
+} else {
+  showPlay();
+}
+</script>
+</body>
+</html>
